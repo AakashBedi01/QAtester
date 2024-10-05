@@ -25,6 +25,21 @@ const flowRoutes = require('./routes/flowRoutes');
 app.use('/api/flows', flowRoutes);
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'regression-ui/build')));
+app.get('/api/test-report', (req, res) => {
+  // Dummy data for now, replace with actual report fetching logic
+  const report = {
+    passed: 5,
+    failed: 2,
+    details: {
+      failedTests: [
+        { testName: 'Test 1', error: 'Button not found', screenshot: 'error_screenshot.png' },
+        { testName: 'Test 2', error: 'Timeout', screenshot: null }
+      ]
+    }
+  };
+
+  res.json(report);
+});
 
 // Fallback to index.html for React Router
 app.get('*', (req, res) => {
