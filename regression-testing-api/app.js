@@ -22,6 +22,7 @@ mongoose.connect('mongodb://localhost/regression_test_db')
 
 // Routes
 const flowRoutes = require('./routes/flowRoutes');
+app.use('/api', flowRoutes);
 app.use('/api/flows', flowRoutes);
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'regression-ui/build')));
@@ -45,5 +46,6 @@ app.get('/api/test-report', (req, res) => {
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'regression-ui/build', 'index.html'));
 });
+
 
 module.exports = app;
