@@ -4,6 +4,7 @@ import { createFlow } from '../api';
 
 const FlowForm = () => {
   const [flowName, setFlowName] = useState('');
+  const [startUrl, setStartUrl] = useState('');
   const [steps, setSteps] = useState([{ action: '', selector: '', value: '' }]);
 
   const handleStepChange = (index, event) => {
@@ -18,10 +19,11 @@ const FlowForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const newFlow = { name: flowName, steps };
+    const newFlow = { name: flowName, startUrl, steps };
     await createFlow(newFlow);
     alert('Flow created successfully!');
     setFlowName('');
+    setStartUrl('');
     setSteps([{ action: '', selector: '', value: '' }]);
   };
 

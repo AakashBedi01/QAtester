@@ -18,7 +18,9 @@ const flowSchema = new Schema({
   name: { type: String, required: true },
   description: { type: String },
   steps: { type: [stepSchema], required: true },  // Array of stepSchema
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  startUrl: { type: String, required: true }
 });
 
-module.exports = mongoose.model('Flow', flowSchema);
+const Flow = mongoose.model('Flow', flowSchema);
+module.exports = Flow;
