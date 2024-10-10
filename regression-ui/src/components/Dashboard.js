@@ -1,4 +1,3 @@
-// src/components/Dashboard.js
 import React, { useState, useEffect } from 'react';
 import { getFlows, runFlow } from '../api';
 
@@ -7,19 +6,28 @@ const Dashboard = () => {
   const [running, setRunning] = useState(false);
 
   useEffect(() => {
-    async function fetchFlows() {
-      const data = await getFlows();
-      setFlows(data);
-    }
+    const fetchFlows = async () => {
+      try {
+        const data = await getFlows();
+        setFlows(data);
+      } catch (error) {
+        console.error('Error fetching flows:', error.message);
+      }
+    };
 
     fetchFlows();
   }, []);
 
   const handleRunFlow = async (flowName) => {
-    setRunning(true);
-    await runFlow(flowName);
-    setRunning(false);
-    alert(`Flow ${flowName} executed successfully!`);
+    try {
+      setRunning(true);
+      await runFlow(flowName);
+      alert(`Flow "${flowName}" executed successfully!`);
+    } catch (error) {
+      console.error('Error running flow:', error.message);
+    } finally {
+      setRunning(false);
+    }
   };
 
   return (

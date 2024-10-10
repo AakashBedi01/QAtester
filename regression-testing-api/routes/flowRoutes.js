@@ -1,9 +1,10 @@
-const express = require('express');
+import express from 'express';
+import { createFlow, getFlows, runFlow } from '../controllers/flowController.js';
+
 const router = express.Router();
-const flowController = require('../controllers/flowController');
 
-router.post('/', flowController.createFlow);
-router.get('/', flowController.getFlows);
-router.post('/run-flow', flowController.runFlow);
+router.post('/', createFlow);
+router.get('/', getFlows);
+router.post('/run-flow', runFlow);
 
-module.exports = router;
+export default router;

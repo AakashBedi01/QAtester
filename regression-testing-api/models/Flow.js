@@ -1,12 +1,12 @@
-// models/Flow.js
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import mongoose from 'mongoose';
+
+const { Schema } = mongoose;
 
 const stepSchema = new Schema({
   action: { type: String, required: true },  // 'click', 'type', 'navigate', etc.
   selector: {
     type: String,
-    required: function () {
+    required() {
       // Make 'selector' required only for actions that aren't 'navigate'
       return this.action !== 'navigate';
     }
@@ -23,4 +23,5 @@ const flowSchema = new Schema({
 });
 
 const Flow = mongoose.model('Flow', flowSchema);
-module.exports = Flow;
+
+export default Flow;

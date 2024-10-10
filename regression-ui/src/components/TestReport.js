@@ -1,22 +1,29 @@
-// src/components/TestReport.js
 import React, { useEffect, useState } from 'react';
 import { getTestReport } from '../api';
 
 const TestReport = () => {
   const [report, setReport] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function fetchReport() {
-      const data = await getTestReport();
-      setReport(data);
-    }
+    const fetchReport = async () => {
+      try {
+        const data = await getTestReport();
+        setReport(data);
+      } catch (error) {
+        console.error('Error fetching test report:', error.message);
+        setError('Failed to load report');
+      } finally {
+        setLoading(false);
+      }
+    };
 
     fetchReport();
   }, []);
 
-  if (!report) {
-    return <div>Loading report...</div>;
-  }
+  if (loading) return <div>Loading report...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div>
@@ -28,7 +35,11 @@ const TestReport = () => {
         {report.details.failedTests.map((test, index) => (
           <li key={index}>
             {test.testName} - {test.error}
-            {test.screenshot && <a href={`/screenshots/${test.screenshot}`} target="_blank">View Screenshot</a>}
+            {test.screenshot && (
+              <a href={`/screenshots/${test.screenshot}`} target="_blank" rel="noopener noreferrer">
+                View Screenshot
+              </a>
+            )}
           </li>
         ))}
       </ul>

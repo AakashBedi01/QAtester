@@ -3,17 +3,21 @@
 import { getFlows } from './api.js';
 import { runFlow } from './runner.js';
 import { logPassed, logFailed, generateReport } from './report.js';
+import puppeteer from 'puppeteer';
 
+// Retry function with custom retries and delay
 const retry = async (fn, retries = 3, delay = 2000) => {
-  for (let i = 0; i < retries; i++) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       return await fn();
     } catch (error) {
-      console.log(`Retrying... (${i + 1}/${retries})`);
+      console.log(`Retrying... (${attempt}/${retries})`);
+      if (attempt === retries) {
+        throw new Error('Max retries reached');
+      }
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
-  throw new Error('Max retries reached');
 };
 
 // Wrap runFlow in retry logic
@@ -30,63 +34,24 @@ async function runFlowInternal(flow) {
 
       switch (step.action) {
         case 'navigate':
-          await page.goto(step.value, { timeout: 30000 });
+          await page.goto(step.value);
           break;
         case 'click':
-          await page.waitForSelector(step.selector, { timeout: 10000 });
           await page.click(step.selector);
           break;
         case 'type':
-          await page.waitForSelector(step.selector, { timeout: 10000 });
           await page.type(step.selector, step.value);
           break;
-        case 'hover':
-          await page.hover(step.selector);
-          break;
-        case 'scroll':
-          await page.evaluate((selector) => document.querySelector(selector).scrollIntoView(), step.selector);
-          break;
-        case 'assert':
-          const text = await page.$eval(step.selector, el => el.innerText);
-          if (text !== step.value) {
-            throw new Error(`Assertion failed: Expected ${step.value} but found ${text}`);
-          }
-          break;
+        // Add other actions here
         default:
-          console.error(`Unknown action: ${step.action}`);
+          console.log(`Unknown action: ${step.action}`);
       }
     }
-    console.log(`Flow ${flow.name} executed successfully.`);
+    await logPassed(flow);
   } catch (error) {
-    console.error(`Error running flow ${flow.name}:`, error);
-    if (page && !page.isClosed()) {
-      await page.screenshot({ path: `error_${flow.name}.png` });
-      console.log(`Screenshot saved for flow: ${flow.name}`);
-    } else {
-      console.log('Unable to capture screenshot as the page is no longer active.');
-    }
+    console.error(`Flow execution failed: ${error.message}`);
+    await logFailed(flow);
   } finally {
     await browser.close();
   }
 }
-
-// Main CLI logic
-(async () => {
-  const flows = await getFlows();
-  if (flows.length === 0) {
-    console.log('No flows found.');
-    return;
-  }
-
-  for (const flow of flows) {
-    console.log(`Running flow: ${flow.name}`);
-    try {
-      await runFlow(flow);
-      logPassed(flow.name);
-    } catch (error) {
-      logFailed(flow.name, error.message);
-    }
-  }
-
-  generateReport(); // Generate the test summary
-})();

@@ -1,4 +1,3 @@
-// src/components/FlowForm.js
 import React, { useState } from 'react';
 import { createFlow } from '../api';
 
@@ -20,11 +19,17 @@ const FlowForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const newFlow = { name: flowName, startUrl, steps };
-    await createFlow(newFlow);
-    alert('Flow created successfully!');
-    setFlowName('');
-    setStartUrl('');
-    setSteps([{ action: '', selector: '', value: '' }]);
+
+    try {
+      await createFlow(newFlow);
+      alert('Flow created successfully!');
+      setFlowName('');
+      setStartUrl('');
+      setSteps([{ action: '', selector: '', value: '' }]);
+    } catch (error) {
+      console.error('Error creating flow:', error.message);
+      alert('Failed to create flow.');
+    }
   };
 
   return (
@@ -35,23 +40,35 @@ const FlowForm = () => {
           Flow Name:
           <input
             type="text"
+            name="flowName"
             value={flowName}
             onChange={(e) => setFlowName(e.target.value)}
             required
           />
         </label>
+        <label>
+          Start URL:
+          <input
+            type="url"
+            name="startUrl"
+            value={startUrl}
+            onChange={(e) => setStartUrl(e.target.value)}
+            required
+          />
+        </label>
+
+        <h3>Steps:</h3>
         {steps.map((step, index) => (
           <div key={index}>
             <label>
               Action:
-              <select name="action" value={step.action} onChange={(e) => handleStepChange(index, e)}>
-                <option value="navigate">Navigate</option>
-                <option value="click">Click</option>
-                <option value="type">Type</option>
-                <option value="hover">Hover</option>
-                <option value="scroll">Scroll</option>
-                <option value="assert">Assert</option>
-              </select>
+              <input
+                type="text"
+                name="action"
+                value={step.action}
+                onChange={(e) => handleStepChange(index, e)}
+                required
+              />
             </label>
             <label>
               Selector:
@@ -60,6 +77,7 @@ const FlowForm = () => {
                 name="selector"
                 value={step.selector}
                 onChange={(e) => handleStepChange(index, e)}
+                required={step.action !== 'navigate'}
               />
             </label>
             <label>
@@ -73,6 +91,7 @@ const FlowForm = () => {
             </label>
           </div>
         ))}
+
         <button type="button" onClick={addStep}>
           Add Step
         </button>
