@@ -1,14 +1,18 @@
-// report.js
-const fs = require('fs');
+const { generateAndSaveReport, getLogger } = require('./utils');
+
+// Set up a logging system using the utility function
+const logger = getLogger('report.log');
 
 const report = {
   passed: [],
   failed: [],
   logPassed(testName) {
     this.passed.push(testName);
+    logger.info(`Test passed: ${testName}`);
   },
   logFailed(testName, error) {
     this.failed.push({ testName, error });
+    logger.error(`Test failed: ${testName}, Error: ${error.message}`);
   },
   generateReport() {
     const summary = {
@@ -20,13 +24,9 @@ const report = {
       },
     };
 
-    console.log("\nTest Summary:");
-    console.log(`- Passed: ${summary.passed}`);
-    console.log(`- Failed: ${summary.failed}`);
-
-    // Optionally save report to a file
-    fs.writeFileSync('test_report.json', JSON.stringify(summary, null, 2));
-    console.log('Test report saved as test_report.json');
+    // Use utility function to generate and save report
+    generateAndSaveReport(summary, 'test_report.json');
+    logger.info('Test report generated and saved successfully.');
   },
 };
 

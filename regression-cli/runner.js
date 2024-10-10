@@ -1,14 +1,8 @@
+const { getLogger } = require('./utils');
 const flowService = require('../regression-testing-api/services/flowService');
-const winston = require('winston');
 
-// Set up a logging system
-const logger = winston.createLogger({
-  level: 'info',
-  transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: 'runner.log' })
-  ]
-});
+// Set up a logging system using the utility function
+const logger = getLogger('runner.log');
 
 // Reuse the flowService to run the flow
 exports.runFlow = async (flow) => {
