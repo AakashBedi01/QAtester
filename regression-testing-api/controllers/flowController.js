@@ -10,31 +10,31 @@ const logger = winston.createLogger({
   ]
 });
 
-// Create a new flow
-export const createFlow = async (req, res) => {
-  logger.info('Incoming flow data:', req.body); // Log incoming request body
-
-  try {
-    const { name, description, steps, startUrl } = req.body;
-    logger.info('Parsed data:', { name, description, steps, startUrl }); // Log parsed data
-
-    const newFlow = new Flow({ name, description, steps, startUrl });
-    await newFlow.save();
-    
-    res.status(201).json(newFlow);
-  } catch (error) {
-    logger.error('Error saving flow:', error.message);
-    res.status(500).json({ error: 'Error creating flow', details: error.message });
+// Utility to mask sensitive data in logs
+const maskSensitiveData = (data) => {
+  const maskedData = { ...data };
+  if (maskedData.password) {
+    maskedData.password = '*****';  // Example of masking
   }
+  return maskedData;
 };
 
-// Fetch all flows
-export const getFlows = async (req, res) => {
+// Create a new flow
+export const createFlow = async (req, res) => {
+  logger.info('Incoming flow data:', maskSensitiveData(req.body)); // Masked sensitive info
+
   try {
-    const flows = await Flow.find({});
-    res.json(flows);
+    const { name, description, steps } = req.body;
+    if (!name || !steps) {
+      return res.status(400).json({ error: 'Name and steps are required.' });
+    }
+
+    const newFlow = await Flow.create({ name, description, steps });
+    logger.info(`Flow ${newFlow._id} created successfully`);
+
+    return res.status(201).json(newFlow);
   } catch (error) {
-    logger.error('Error fetching flows:', error.message);
-    res.status(500).json({ error: 'Error fetching flows', details: error.message });
+    logger.error(`Error creating flow: ${error.message}`);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 };

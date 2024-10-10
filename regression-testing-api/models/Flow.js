@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import sanitizeHtml from 'sanitize-html'; // Input sanitization library
 
 const { Schema } = mongoose;
 
@@ -7,19 +8,24 @@ const stepSchema = new Schema({
   selector: {
     type: String,
     required() {
-      // Make 'selector' required only for actions that aren't 'navigate'
-      return this.action !== 'navigate';
+      return this.action !== 'navigate';  // Make selector required for non-navigate actions
     }
   },
-  value: { type: String }  // Value to type or URL to navigate to
+  value: { type: String },  // Value to type or URL to navigate to
+});
+
+// Middleware to sanitize inputs
+stepSchema.pre('save', function (next) {
+  if (this.value) {
+    this.value = sanitizeHtml(this.value);  // Sanitize the input to prevent XSS
+  }
+  next();
 });
 
 const flowSchema = new Schema({
   name: { type: String, required: true },
   description: { type: String },
-  steps: { type: [stepSchema], required: true },  // Array of stepSchema
-  createdAt: { type: Date, default: Date.now },
-  startUrl: { type: String, required: true }
+  steps: [stepSchema]
 });
 
 const Flow = mongoose.model('Flow', flowSchema);
